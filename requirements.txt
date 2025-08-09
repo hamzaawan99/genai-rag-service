@@ -1,0 +1,30 @@
+# Core dependencies
+fastapi[standard]
+uvicorn[standard]
+python-multipart
+python-dotenv
+pydantic
+pydantic-settings
+
+# Document processing
+pypdf
+unstructured
+python-magic
+
+# Embeddings
+sentence-transformers
+torch
+transformers
+openai
+
+# Vector databases
+faiss-cpu
+weaviate-client
+
+# Frontend
+streamlit
+streamlit-chat
+
+# Utilities
+tqdm
+loguru
