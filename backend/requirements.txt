@@ -1,0 +1,2 @@
+fastapi[standard]==0.116.1
+weaviate-client==4.16.6
