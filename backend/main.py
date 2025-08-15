@@ -1,22 +1,23 @@
-import os
-import weaviate
-from weaviate.classes.init import Auth
-from dotenv import load_dotenv
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
-load_dotenv()
+from app.core.config import settings
+from app.core.database import engine, Base
+from app.api import auth
 
-# Best practice: store your credentials in environment variables
-weaviate_api_key = os.environ["WEAVIATE_API_KEY"]
+# Create database tables
+Base.metadata.create_all(bind=engine)
 
-client = weaviate.connect_to_local(
-    host="127.0.0.1",  # Use a string to specify the host
-    port=9900,
-    grpc_port=50051,
-    auth_credentials=Auth.api_key(weaviate_api_key)
+app = FastAPI(title=settings.PROJECT_NAME)
+
+# Add CORS middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Allow all for now, replace with frontend URL if in production
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
-print(client.is_ready())
-
-assert client.is_ready()
-
-client.close()
+# Routers
+app.include_router(auth.router, prefix=settings.API_V1_STR + "/auth", tags=["auth"])
