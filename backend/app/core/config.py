@@ -6,9 +6,14 @@ class Settings(BaseSettings):
     PROJECT_NAME: str = "GenAI RAG Service"
     API_V1_STR: str = "/api/v1"
 
+    # Weaviate settings
     WEAVIATE_API_USER: str
     WEAVIATE_API_KEY: str
+    WEAVIATE_HOST: str = "localhost"
+    WEAVIATE_PORT: str = "9900"
+    WEAVIATE_GRPC_PORT: str = "50051"
 
+    # Redis settings
     REDIS_PORT: str
     REDIS_PASSWORD: str
     

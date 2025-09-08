@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.core.config import settings
 from app.core.database import engine, Base
-from app.api import auth
+from app.api import auth, knowledge_base
 
 # Create database tables
 Base.metadata.create_all(bind=engine)
@@ -21,3 +21,8 @@ app.add_middleware(
 
 # Routers
 app.include_router(auth.router, prefix=settings.API_V1_STR + "/auth", tags=["auth"])
+app.include_router(
+    knowledge_base.router,
+    prefix=settings.API_V1_STR + "/knowledge-bases",
+    tags=["knowledge-bases"]
+)
