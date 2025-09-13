@@ -17,3 +17,4 @@ class User(Base):
     # Relationships
     knowledge_bases = relationship("KnowledgeBase", back_populates="user")
     documents = relationship("Document", back_populates="user")
+    chat_sessions = relationship("ChatSession", back_populates="user")

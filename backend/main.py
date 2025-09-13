@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.core.config import settings
 from app.core.database import engine, Base
-from app.api import auth, knowledge_base
+from app.api import auth, knowledge_base, chat
 
 # Create database tables
 Base.metadata.create_all(bind=engine)
@@ -25,4 +25,9 @@ app.include_router(
     knowledge_base.router,
     prefix=settings.API_V1_STR + "/knowledge-bases",
     tags=["knowledge-bases"]
+)
+app.include_router(
+    chat.router,
+    prefix=settings.API_V1_STR + "/chat",
+    tags=["chat"]
 )

@@ -4,7 +4,7 @@ from sqlalchemy.orm import relationship
 
 from app.core.database import Base
 
-from sqlalchemy.types import JSON
+from sqlalchemy.dialects.postgresql import JSONB
 
 class KnowledgeBase(Base):
     __tablename__ = "knowledge_bases"
@@ -22,6 +22,7 @@ class KnowledgeBase(Base):
     # Relationships
     user = relationship("User", back_populates="knowledge_bases")
     documents = relationship("Document", back_populates="knowledge_base", cascade="all, delete-orphan")
+    chat_sessions = relationship("ChatSession", back_populates="knowledge_base", cascade="all, delete-orphan")
 
 class Document(Base):
     __tablename__ = "documents"
@@ -29,7 +30,7 @@ class Document(Base):
     id = Column(Integer, primary_key=True, index=True)
     title = Column(String, nullable=False)
     content = Column(Text, nullable=False)  # Original document content
-    document_metadata = Column(JSON, nullable=True)  # Store metadata as JSON for better querying
+    document_metadata = Column(JSONB, nullable=True)  # Store metadata as JSONB for better querying
     knowledge_base_id = Column(Integer, ForeignKey("knowledge_bases.id"), nullable=False)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now())

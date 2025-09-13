@@ -6,6 +6,13 @@ class Settings(BaseSettings):
     PROJECT_NAME: str = "GenAI RAG Service"
     API_V1_STR: str = "/api/v1"
 
+    # Azure OpenAI settings
+    AZURE_OPENAI_API_KEY: str
+    AZURE_OPENAI_ENDPOINT: str
+    AZURE_OPENAI_VERSION: str
+    AZURE_OPENAI_CHAT_MODEL_DEPLOYMENT: str
+    AZURE_OPENAI_EMBEDDINGS_DEPLOYMENT: str
+
     # Weaviate settings
     WEAVIATE_API_USER: str
     WEAVIATE_API_KEY: str
