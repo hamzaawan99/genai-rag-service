@@ -113,7 +113,7 @@ class ChromaDBClient(VectorDBClient):
         for i in range(len(results['ids'][0])):
             formatted_results.append({
                 'id': results['ids'][0][i],
-                'document': results['documents'][0][i],
+                'content': results['documents'][0][i],
                 'metadata': results['metadatas'][0][i] if results['metadatas'] else None,
                 'distance': results['distances'][0][i] if 'distances' in results else None
             })

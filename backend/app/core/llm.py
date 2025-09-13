@@ -1,6 +1,6 @@
 from typing import List, Optional
 import openai
-from openai import AzureOpenAI
+from openai import AsyncAzureOpenAI
 from app.core.config import settings
 
 class AzureOpenAIClient:
@@ -10,7 +10,7 @@ class AzureOpenAIClient:
         openai.api_type = "azure"
         openai.api_version = settings.AZURE_OPENAI_VERSION
 
-        self.aoai_client = AzureOpenAI(
+        self.aoai_client = AsyncAzureOpenAI(
             api_key=settings.AZURE_OPENAI_API_KEY,
             api_version=settings.AZURE_OPENAI_VERSION,
             azure_endpoint=settings.AZURE_OPENAI_ENDPOINT

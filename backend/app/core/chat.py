@@ -5,6 +5,7 @@ from sqlalchemy import desc
 
 from app.core.llm import AzureOpenAIClient
 from app.core.vector_store import VectorDBFactory
+from chromadb.utils.embedding_functions import ONNXMiniLM_L6_V2
 from app.models.chat import ChatSession, ChatMessage
 from app.models.user import User
 from app.models.knowledge_base import KnowledgeBase
@@ -56,7 +57,7 @@ class ChatService:
         return {
             "message": response,
             "relevant_docs": relevant_docs,
-            "conversation_id": chat_session.session_id
+            "conversation_id": str(chat_session.session_id)
         }
     
     def _get_or_create_chat_session(
@@ -102,8 +103,9 @@ class ChatService:
         query: str,
         limit: int
     ) -> List[Dict[str, Any]]:
-        # Get embeddings for the query
-        query_embedding = self.llm_client.get_embeddings(query)
+        # Use MiniLM embeddings for consistency with document ingestion
+        embedding_function = ONNXMiniLM_L6_V2()
+        query_embedding = embedding_function([query])[0].tolist()
         
         # Search in vector store
         vector_client = VectorDBFactory.create_client(kb.vector_db)
