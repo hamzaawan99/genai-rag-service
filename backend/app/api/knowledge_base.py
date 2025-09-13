@@ -78,6 +78,36 @@ async def add_document(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
+    # Ensure the document is being added to the specified knowledge base
+    if doc_create.knowledge_base_id != kb_id:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Knowledge base ID in path does not match document data"
+        )
+    
+    try:
+        document = kb_service.add_document(
+            db=db,
+            doc_create=doc_create,
+            user=current_user
+        )
+        if not document:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Knowledge base not found"
+            )
+        return document
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=str(e)
+        )
+async def add_document(
+    kb_id: int,
+    doc_create: DocumentCreate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
     """Add a document to a knowledge base."""
     # TODO: Get vector embeddings from the embedding model
     # For now, using dummy embeddings

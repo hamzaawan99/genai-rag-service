@@ -6,3 +6,5 @@ __pycache__/
 .backend_env/
 
 internal-readme.md
+
+backend/data/

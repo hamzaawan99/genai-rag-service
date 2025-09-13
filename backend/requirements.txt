@@ -7,3 +7,4 @@ passlib[bcrypt]==1.7.4
 python-multipart==0.0.20
 python-dotenv==1.1.1
 alembic==1.16.4
+chromadb==1.0.20

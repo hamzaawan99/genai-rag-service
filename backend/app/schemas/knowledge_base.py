@@ -1,18 +1,19 @@
 from pydantic import BaseModel, Field
-from typing import Optional, List
+from typing import Optional, List, Dict, Literal
 from datetime import datetime
 
 class KnowledgeBaseBase(BaseModel):
     name: str = Field(..., min_length=1, max_length=255)
     description: Optional[str] = None
     embedding_model: str = Field(..., min_length=1)
+    vector_db: Literal["chromadb", "weaviate"] = Field(default="chromadb")
 
 class KnowledgeBaseCreate(KnowledgeBaseBase):
     pass
 
 class KnowledgeBase(KnowledgeBaseBase):
     id: int
-    weaviate_class_name: str
+    collection_name: str
     user_id: int
     created_at: datetime
     updated_at: Optional[datetime] = None
@@ -23,7 +24,7 @@ class KnowledgeBase(KnowledgeBaseBase):
 class DocumentBase(BaseModel):
     title: str = Field(..., min_length=1, max_length=255)
     content: str = Field(..., min_length=1)
-    document_metadata: Optional[str] = None
+    document_metadata: Optional[Dict] = None
 
 class DocumentCreate(DocumentBase):
     knowledge_base_id: int

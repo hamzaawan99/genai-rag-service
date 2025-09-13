@@ -5,17 +5,18 @@ import json
 from app.models.knowledge_base import KnowledgeBase, Document
 from app.models.user import User
 from app.schemas.knowledge_base import KnowledgeBaseCreate, DocumentCreate
-from app.core.weaviate_client import WeaviateClient
+from app.core.vector_store import VectorDBFactory
 
-def generate_class_name(kb_name: str, user_id: int) -> str:
-    """Generate a unique Weaviate class name for the knowledge base."""
-    # Remove spaces and special characters, convert to title case
+def generate_collection_name(kb_name: str, user_id: int) -> str:
+    """Generate a unique collection name for the vector database."""
+    # Remove spaces and special characters
     clean_name = "".join(c for c in kb_name if c.isalnum())
-    return f"User{user_id}{clean_name}"
+    return f"user_{user_id}_{clean_name}".lower()
 
 class KnowledgeBaseService:
     def __init__(self):
-        self.weaviate_client = WeaviateClient()
+        # Start with ChromaDB as default
+        self.vector_db = VectorDBFactory.create_client("chromadb")
     
     def create_knowledge_base(
         self,
@@ -24,18 +25,19 @@ class KnowledgeBaseService:
         user: User
     ) -> KnowledgeBase:
         """Create a new knowledge base."""
-        # Generate Weaviate class name
-        weaviate_class_name = generate_class_name(kb_create.name, user.id)
+        # Generate collection name
+        collection_name = generate_collection_name(kb_create.name, user.id)
         
-        # Create the class in Weaviate
-        self.weaviate_client.create_class(weaviate_class_name)
+        # Create the collection in vector DB
+        self.vector_db.create_collection(collection_name)
         
         # Create knowledge base in database
         db_kb = KnowledgeBase(
             name=kb_create.name,
             description=kb_create.description,
             embedding_model=kb_create.embedding_model,
-            weaviate_class_name=weaviate_class_name,
+            vector_db=kb_create.vector_db,
+            collection_name=collection_name,
             user_id=user.id
         )
         
@@ -102,8 +104,48 @@ class KnowledgeBaseService:
         db: Session,
         doc_create: DocumentCreate,
         user: User,
-        vector: List[float]
+        vector: Optional[List[float]] = None
     ) -> Optional[Document]:
+        # Get the knowledge base
+        kb = self.get_knowledge_base(db, doc_create.knowledge_base_id, user)
+        if not kb:
+            return None
+            
+        # Create document in database
+        db_document = Document(
+            title=doc_create.title,
+            content=doc_create.content,
+            document_metadata=doc_create.document_metadata,
+            knowledge_base_id=doc_create.knowledge_base_id,
+            user_id=user.id
+        )
+        db.add(db_document)
+        db.commit()
+        db.refresh(db_document)
+        
+        # Create vector store client based on knowledge base configuration
+        vector_client = VectorDBFactory.create_client(kb.vector_db)
+        
+        # Add document to vector store
+        try:
+            vector_client.add_document(
+                collection_name=kb.collection_name,
+                document_id=str(db_document.id),
+                content=doc_create.content,
+                metadata={
+                    "title": doc_create.title,
+                    "document_id": db_document.id,
+                    **(doc_create.document_metadata or {})
+                },
+                vector=vector
+            )
+        except Exception as e:
+            # If vector store addition fails, rollback database changes
+            db.delete(db_document)
+            db.commit()
+            raise e
+            
+        return db_document
         """Add a document to a knowledge base."""
         # Check if knowledge base exists and belongs to user
         kb = self.get_knowledge_base(db, doc_create.knowledge_base_id, user)
